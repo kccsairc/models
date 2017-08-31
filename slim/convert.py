@@ -31,15 +31,15 @@ def label_to_integer(labels):
 		labels[i] = label_to_id.index(labels[i])
 	return labels, label_to_id
 	
-def convert_tfrecord_and_write(dataset_name,filepaths, labels, units, validations, tfrecord_dir):
+def convert_tfrecord_and_write(dataset_name,filepaths, labels, units, validations, output_dir):
 	trains_end = len(filepaths) // units * units
 	train_filepaths = zip(*[iter(filepaths[validations:trains_end])]*units)
 	train_labels = zip(*[iter(labels[validations:trains_end])]*units)
 	validation_filepaths = zip(*[iter(filepaths[0:validations])]*units)
 	validation_labels = zip(*[iter(labels[0:validations])]*units)
 	
-	write_tfrecord(dataset_name,'train', train_filepaths, train_labels, tfrecord_dir)
-	write_tfrecord(dataset_name,'validation', validation_filepaths, validation_labels, tfrecord_dir)
+	write_tfrecord(dataset_name,'train', train_filepaths, train_labels, output_dir)
+	write_tfrecord(dataset_name,'validation', validation_filepaths, validation_labels, output_dir)
 
 def _int64_feature(values):
 	if not isinstance(values, (tuple, list)):
@@ -57,7 +57,7 @@ def image_to_tfexample(image_data, image_format, height, width, class_id):
 		'image/height': _int64_feature(height),
 		'image/width': _int64_feature(width)}))
 
-def write_tfrecord(dataset_name,split_name, filepath_lists, label_lists, tfrecord_dir):
+def write_tfrecord(dataset_name,split_name, filepath_lists, label_lists, output_dir):
 	jpeg_path = tf.placeholder(dtype=tf.string)
 	jpeg_data = tf.read_file(jpeg_path)
 	decode_jpeg = tf.image.decode_jpeg(jpeg_data, channels=3)
@@ -65,7 +65,7 @@ def write_tfrecord(dataset_name,split_name, filepath_lists, label_lists, tfrecor
 	with tf.Session() as sess:
 		for i, filepath_list in enumerate(filepath_lists):
 			output_filename = '%s_%s_%05d-of-%05d.tfrecord'%(dataset_name, split_name, i, len(filepath_lists))
-			with tf.python_io.TFRecordWriter(os.path.join(tfrecord_dir,output_filename)) as writer:
+			with tf.python_io.TFRecordWriter(os.path.join(output_dir, output_filename)) as writer:
 				for j,filepath in enumerate(filepath_list):
 					sys.stdout.write('\r>> Converting image %d/%d'%(j+1, len(filepath_list)))
 					sys.stdout.flush()
@@ -88,5 +88,5 @@ def createTfrecord(input_dir=None, output_dir, num_data, validations, dataset_na
 	filepaths, labels = filepath_label(input_dir)
 	labels, label_to_id = label_to_integer(labels)
 
-	convert_tfrecord_and_write(dataset_name, filepaths, labels, num_data, validations, tfrecord_dir)
+	convert_tfrecord_and_write(dataset_name, filepaths, labels, num_data, validations, output_dir)
 	write_label_map(label_to_id, os.path.join(output_dir,"label.txt"))
