@@ -16,4 +16,4 @@ if __name__ == '__main__':
             decay_steps=10,
             utilization_per_gpu=1.0,
             gpu_number="0",
-            checkpoint_path="/model/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224.ckpt")
+            )
