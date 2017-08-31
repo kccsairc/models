@@ -14,13 +14,7 @@ from urllib2 import urlopen
 import numpy as np
 import sys, os
 
-from PIL import Image
-import matplotlib as mpl;mpl.use('Agg') # use Agg to avoid error (QXcbConnection: Could not connect to display)
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import AxesGrid
-
-
-def get_image_data(url=None,img_path=None):
+def get_image_data(url=None, img_path=None):
     raw_image = None
     if url != None:
         raw_image = urlopen(url).read()
@@ -30,7 +24,7 @@ def get_image_data(url=None,img_path=None):
     
 slim = tf.contrib.slim
 
-def testResult(checkpoint_path=None,model_name=None,num_classes=0,img_path=None):
+def testResult(checkpoint_path=None, model_name=None, num_classes=0, img_path=None):
   with tf.Graph().as_default():
     tf_global_step = slim.get_or_create_global_step()
     
