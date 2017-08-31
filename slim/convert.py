@@ -79,7 +79,7 @@ def write_label_map(label_list, output_filename):
 		for i, label in enumerate(label_list):
 			f.write('%d:%s\n'%(i,label))
 	
-def createTfrecord(input_dir="/img/testdata/",tfrecord_dir=".",num_data=10,validations=100,dataset_name="labellio"):
+def createTfrecord(input_dir=None, output_dir, num_data, validations, dataset_name):
 	if not input_dir:
 		raise ValueError('You must supply the image directory with --input_dir')
 	if not validations % num_data == 0 :
@@ -89,4 +89,4 @@ def createTfrecord(input_dir="/img/testdata/",tfrecord_dir=".",num_data=10,valid
 	labels, label_to_id = label_to_integer(labels)
 
 	convert_tfrecord_and_write(dataset_name, filepaths, labels, num_data, validations, tfrecord_dir)
-	write_label_map(label_to_id, os.path.join(tfrecord_dir,"label.txt"))
+	write_label_map(label_to_id, os.path.join(output_dir,"label.txt"))
