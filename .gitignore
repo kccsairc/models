@@ -1,4 +1,4 @@
-slim/visualized_layer/
+slim/visualized_layer/*
 *.pyc
 
 # Byte-compiled / optimized / DLL files
