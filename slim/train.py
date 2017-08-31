@@ -34,7 +34,7 @@ default_config = {
 }
 config = ConfigParser.SafeConfigParser(default_config)
 
-def main(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_train=None,num_val=None,num_classes=None,model_name="mobilenet_v1",max_number_of_steps=1000,batch_size=10,learning_rate=0.01,learning_rate_decay_type="fixed",optimizer_type="rmsprop",model_every_n_steps=10,end_learning_rate=None,learning_rate_decay_factor=None,decay_steps=10,checkpoint_path=None):
+def main(train_dir="/tmp/model/", dataset_name="labellio", dataset_dir=".", num_train=None, num_val=None, num_classes=None, model_name="mobilenet_v1", max_number_of_steps=1000, batch_size=10, learning_rate=0.01, learning_rate_decay_type="fixed", optimizer_type="rmsprop", model_every_n_steps=10, end_learning_rate=None, learning_rate_decay_factor=None, decay_steps=10, checkpoint_path=None):
 
   if not dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
@@ -396,7 +396,7 @@ def main(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_tra
     # train step fn
     def train_step_fn(session, *args, **kwargs):
       step = int(session.run(args[1]))
-      total_loss, should_stop = train_step(session, *args, **kwargs)
+      total_loss_val, should_stop = train_step(session, *args, **kwargs)
       print(" train_image_classifier: train_step_fn: step", step)
       conf_file = os.path.join(train_dir,"config.conf")
  
@@ -411,17 +411,25 @@ def main(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_tra
         #print("Error occured")
         #return False
       print(step)
-      mode = step % model_every_n_steps
-      if mode == 0 or mode == 1:
-        accuracy = session.run(accuracy_validation)
-        print('_________________varidation score_____________________')
-        print('Step %s - Loss: %.2f Accuracy: %.2f%%' % (str(step).rjust(6, '0'), total_loss, accuracy * 100))
+      mod_save = step % model_every_n_steps
+      if mode_save == 0 or mode_save == 1:
         print('_________________save ckpt models_____________________')
         print(" train_image_classifier: train_step_fn: save ckpt", step)
         saver.save(session, save_directory+"model__step"+str(step)+".ckpt")        
       
-      total_loss, should_stop = train_step(session, *args, **kwargs)
-      return [total_loss, should_stop] 
+      total_loss_train, should_stop = train_step(session, *args, **kwargs)
+      mode_log = step % 100
+      if mode_save == 0 or mode_save == 1:
+	accuracy = session.run(accuracy_validation)
+        print('_________________varidation score_____________________')
+        print('Step %s - Loss_train: %.2f Loss_val: %.2f Accuracy: %.2f%%' % (str(step).rjust(6, '0'), total_loss_train, total_loss_val, accuracy * 100))
+	if mode_save == 1:
+	  step -= 1
+	#update_chart_db(model_id,"iter",step)
+	#update_chart_db(model_id,"loss_0",total_loss_train)
+	#update_chart_db(model_id,"loss_test",total_loss_val)
+	#update_chart_db(model_id,"accuracy",accuracy * 100)
+      return [total_loss_train, should_stop] 
 
 
     ###########################
