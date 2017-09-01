@@ -7,6 +7,7 @@ import random
 import os
 import sys
 import time
+#from alpaca_common.message_queue import set_status
 
 def filepath_label(path):
 	data = []
@@ -31,7 +32,12 @@ def label_to_integer(labels):
 		labels[i] = label_to_id.index(labels[i])
 	return labels, label_to_id
 	
-def convert_tfrecord_and_write(dataset_name,filepaths, labels, units, validations, output_dir):
+def convert_tfrecord_and_write(dataset_name,
+			       filepaths,
+			       labels,
+			       units,
+			       validations,
+			       output_dir):
 	trains_end = len(filepaths) // units * units
 	train_filepaths = zip(*[iter(filepaths[validations:trains_end])]*units)
 	train_labels = zip(*[iter(labels[validations:trains_end])]*units)
@@ -68,6 +74,7 @@ def write_tfrecord(dataset_name,split_name, filepath_lists, label_lists, output_
 			with tf.python_io.TFRecordWriter(os.path.join(output_dir, output_filename)) as writer:
 				for j,filepath in enumerate(filepath_list):
 					sys.stdout.write('\r>> Converting image %d/%d'%(j+1, len(filepath_list)))
+					#set_status('model', model_id, 'Creating dataset %d/%d'%(j+1, len(filepath_list)))
 					sys.stdout.flush()
 					image_data, image = sess.run([jpeg_data, decode_jpeg], feed_dict={jpeg_path:filepath})
 					example = image_to_tfexample(image_data, 'jpg', image.shape[0], image.shape[1], label_lists[i][j])
