@@ -5,4 +5,4 @@ if __name__ == '__main__':
     #stop model
     stop(train_dir="/tmp/model/")
     #stop model using status manager
-    #stop()
+    #stop(model_id="1")

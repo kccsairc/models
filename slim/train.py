@@ -421,7 +421,6 @@ def start(model_id=None,
       #try:
       config.read(conf_file)
       status = config.get("0",STATUS)
-      print(status)
 
       if status == "stop":
         import sys
@@ -431,7 +430,6 @@ def start(model_id=None,
       #  import sys
       #  sys.exit(0)
 	
-      print(step)
       mode_save = step % model_every_n_steps
       if mode_save == 0 or mode_save == 1:
         print('_________________save ckpt models_____________________')
@@ -454,6 +452,7 @@ def start(model_id=None,
 	#update_chart_db(model_id,"loss_test",total_loss_val)
 	#update_chart_db(model_id,"accuracy",accuracy * 100)
 	#set_status('model', model_id, 'Iteration %d/%d'%(step, max_number_of_steps))
+        print('Iteration %d/%d'%(step, max_number_of_steps))
       return [total_loss_train, should_stop] 
 
 
@@ -535,7 +534,7 @@ def stop(model_id=None,train_dir=None):
   config.set("0",STATUS, "stop")
   config.write(open(conf_file, 'w'))
 
-　#set_status('model', model_id, 'stop')
+  #set_status('model', model_id, 'stop')
   return False
 
 def restart(model_id=None,
@@ -560,13 +559,13 @@ def restart(model_id=None,
   conf_file = os.path.join(train_dir,"config.conf")
   #try:
   config.add_section("0")
-  config.set("0",STATUS, "training"
+  config.set("0",STATUS, "training")
   config.write(open(conf_file, 'w'))
 
   gpuConfig = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=utilization_per_gpu,
 							 visible_device_list=gpu_number)) 
   with tf.Session(config=gpuConfig) as session:
-　  #set_status('model', model_id, 'restart')
+    #set_status('model', model_id, 'restart')
     start(model_id,
 	  train_dir=train_dir,
 	  dataset_name=dataset_name,

@@ -36,13 +36,13 @@ def convert_tfrecord_and_write(dataset_name,
 			       filepaths,
 			       labels,
 			       units,
-			       validations,
+			       num_val,
 			       output_dir):
 	trains_end = len(filepaths) // units * units
-	train_filepaths = zip(*[iter(filepaths[validations:trains_end])]*units)
-	train_labels = zip(*[iter(labels[validations:trains_end])]*units)
-	validation_filepaths = zip(*[iter(filepaths[0:validations])]*units)
-	validation_labels = zip(*[iter(labels[0:validations])]*units)
+	train_filepaths = zip(*[iter(filepaths[num_val:trains_end])]*units)
+	train_labels = zip(*[iter(labels[num_val:trains_end])]*units)
+	validation_filepaths = zip(*[iter(filepaths[0:num_val])]*units)
+	validation_labels = zip(*[iter(labels[0:num_val])]*units)
 	
 	write_tfrecord(dataset_name,'train', train_filepaths, train_labels, output_dir)
 	write_tfrecord(dataset_name,'validation', validation_filepaths, validation_labels, output_dir)
@@ -86,14 +86,14 @@ def write_label_map(label_list, output_filename):
 		for i, label in enumerate(label_list):
 			f.write('%d:%s\n'%(i,label))
 	
-def createTfrecord(input_dir=None, output_dir, num_data, validations, dataset_name):
+def createTfrecord(input_dir, output_dir, num_data, num_val, dataset_name):
 	if not input_dir:
 		raise ValueError('You must supply the image directory with --input_dir')
-	if not validations % num_data == 0 :
-		raise ValueError('<validations> must be divisible by <num_data>')
+	if not num_val % num_data == 0 :
+		raise ValueError('<num_val> must be divisible by <num_data>')
 
 	filepaths, labels = filepath_label(input_dir)
 	labels, label_to_id = label_to_integer(labels)
 
-	convert_tfrecord_and_write(dataset_name, filepaths, labels, num_data, validations, output_dir)
+	convert_tfrecord_and_write(dataset_name, filepaths, labels, num_data, num_val, output_dir)
 	write_label_map(label_to_id, os.path.join(output_dir,"label.txt"))

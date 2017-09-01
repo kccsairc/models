@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from train import createModel,stop,restart,relearn
-from convert import createTfrecord
-from test import testResult
-from visualize import createVisualization
+from train import relearn
 
 if __name__ == '__main__':
     #relearn model
@@ -14,7 +11,7 @@ if __name__ == '__main__':
            num_val=40,
            num_classes=5,
            model_name="mobilenet_v1",
-           max_number_of_steps=1000,
+           max_number_of_steps=2000,
            batch_size=10,
            learning_rate=0.95,
            learning_rate_decay_type="exponential",
