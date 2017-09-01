@@ -3,7 +3,8 @@ from train import createModel,stop,restart,relearn
 
 if __name__ == '__main__':
     #create model
-    createModel(train_dir="/tmp/model/",
+    createModel(model_id=1,
+                train_dir="/tmp/model/",
                 dataset_name="labellio",
                 dataset_dir="/img/tfrecord/",
                 num_train=10000,
