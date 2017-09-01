@@ -13,7 +13,7 @@ if __name__ == '__main__':
                 model_name="mobilenet_v1",
                 max_number_of_steps=1000,
                 batch_size=10,
-                learning_rate=0.01,
+                learning_rate=0.95,
                 learning_rate_decay_type="exponential",
                 optimizer="rmsprop",
                 model_every_n_steps=1000,
