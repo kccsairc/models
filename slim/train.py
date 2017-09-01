@@ -34,7 +34,23 @@ default_config = {
 }
 config = ConfigParser.SafeConfigParser(default_config)
 
-def main(train_dir="/tmp/model/", dataset_name="labellio", dataset_dir=".", num_train=None, num_val=None, num_classes=None, model_name="mobilenet_v1", max_number_of_steps=1000, batch_size=10, learning_rate=0.01, learning_rate_decay_type="fixed", optimizer_type="rmsprop", model_every_n_steps=10, end_learning_rate=None, learning_rate_decay_factor=None, decay_steps=10, checkpoint_path=None):
+def main(train_dir="/tmp/model/", 
+	 dataset_name="labellio", 
+	 dataset_dir=".", 
+	 num_train=None, 
+	 num_val=None, 
+	 num_classes=None, 
+	 model_name="mobilenet_v1", 
+	 max_number_of_steps=1000, 
+	 batch_size=10, 
+	 learning_rate=0.01, 
+	 learning_rate_decay_type="fixed", 
+	 optimizer_type="rmsprop", 
+	 model_every_n_steps=10, 
+	 end_learning_rate=None, 
+	 learning_rate_decay_factor=None, 
+	 decay_steps=10, 
+	 checkpoint_path=None):
 
   if not dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
@@ -450,7 +466,25 @@ def main(train_dir="/tmp/model/", dataset_name="labellio", dataset_dir=".", num_
         sync_optimizer=optimizer if False else None)
 
 
-def createModel(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_train=None,num_val=None,num_classes=None,model_name="mobilenet_v1",max_number_of_steps=1000,batch_size=10,learning_rate=0.01,learning_rate_decay_type="fixed",optimizer="rmsprop",model_every_n_steps=10,learning_rate_decay_factor=None,decay_steps=10,utilization_per_gpu=1.0,gpu_number="0",checkpoint_path="default"):
+def createModel(
+	train_dir="/tmp/model/",
+	dataset_name="labellio",
+	dataset_dir=".",
+	num_train=None,
+	num_val=None,
+	num_classes=None,
+	model_name="mobilenet_v1",
+	max_number_of_steps=1000,
+	batch_size=10,
+	learning_rate=0.01,
+	learning_rate_decay_type="fixed",
+	optimizer="rmsprop",
+	model_every_n_steps=10,
+	learning_rate_decay_factor=None,
+	decay_steps=10,
+	utilization_per_gpu=0.9,
+	gpu_number="0",
+	checkpoint_path="default"):
 
     conf_file = os.path.join(train_dir,"config.conf")
 
