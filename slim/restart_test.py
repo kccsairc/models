@@ -14,6 +14,5 @@ if __name__ == '__main__':
             optimizer="rmsprop",
             model_every_n_steps=10,
             decay_steps=10,
-            utilization_per_gpu=1.0,
-            gpu_number="0",
-            )
+            utilization_per_gpu=0,
+            gpu_number="0")
