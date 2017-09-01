@@ -26,6 +26,7 @@ from nets import nets_factory
 from preprocessing import preprocessing_factory
 import ConfigParser
 import os
+#from alpaca_common.message_queue import set_status,get_status
 
 slim = tf.contrib.slim
 STATUS = "status"
@@ -34,7 +35,8 @@ default_config = {
 }
 config = ConfigParser.SafeConfigParser(default_config)
 
-def main(train_dir="/tmp/model/", 
+def start(model_id=None,
+	 train_dir="/tmp/model/", 
 	 dataset_name="labellio", 
 	 dataset_dir=".", 
 	 num_train=None, 
@@ -420,14 +422,17 @@ def main(train_dir="/tmp/model/",
       config.read(conf_file)
       status = config.get("0",STATUS)
       print(status)
+
       if status == "stop":
         import sys
         sys.exit(0)
-      #except:
-        #print("Error occured")
-        #return False
+
+      #if get_status('model', model_id) == "stop":
+      #  import sys
+      #  sys.exit(0)
+	
       print(step)
-      mod_save = step % model_every_n_steps
+      mode_save = step % model_every_n_steps
       if mode_save == 0 or mode_save == 1:
         print('_________________save ckpt models_____________________')
         print(" train_image_classifier: train_step_fn: save ckpt", step)
@@ -435,16 +440,20 @@ def main(train_dir="/tmp/model/",
       
       total_loss_train, should_stop = train_step(session, *args, **kwargs)
       mode_log = step % 100
-      if mode_save == 0 or mode_save == 1:
+      if mode_log == 0 or mode_log == 1:
 	accuracy = session.run(accuracy_validation)
         print('_________________varidation score_____________________')
-        print('Step %s - Loss_train: %.2f Loss_val: %.2f Accuracy: %.2f%%' % (str(step).rjust(6, '0'), total_loss_train, total_loss_val, accuracy * 100))
+        print('Step %s - Loss_train: %.2f Loss_val: %.2f Accuracy: %.2f%%' % (str(step).rjust(6, '0'),
+									      total_loss_train,
+									      total_loss_val,
+									      accuracy * 100))
 	if mode_save == 1:
 	  step -= 1
 	#update_chart_db(model_id,"iter",step)
 	#update_chart_db(model_id,"loss_0",total_loss_train)
 	#update_chart_db(model_id,"loss_test",total_loss_val)
 	#update_chart_db(model_id,"accuracy",accuracy * 100)
+	#set_status('model', model_id, 'Iteration %d/%d'%(step, max_number_of_steps))
       return [total_loss_train, should_stop] 
 
 
@@ -466,68 +475,164 @@ def main(train_dir="/tmp/model/",
         sync_optimizer=optimizer if False else None)
 
 
-def createModel(
-	train_dir="/tmp/model/",
-	dataset_name="labellio",
-	dataset_dir=".",
-	num_train=None,
-	num_val=None,
-	num_classes=None,
-	model_name="mobilenet_v1",
-	max_number_of_steps=1000,
-	batch_size=10,
-	learning_rate=0.01,
-	learning_rate_decay_type="fixed",
-	optimizer="rmsprop",
-	model_every_n_steps=10,
-	learning_rate_decay_factor=None,
-	decay_steps=10,
-	utilization_per_gpu=0.9,
-	gpu_number="0",
-	checkpoint_path="default"):
+def createModel(model_id=None,
+		train_dir="/tmp/model/",
+		dataset_name="labellio",
+		dataset_dir=".",
+		num_train=None,
+		num_val=None,
+		num_classes=None,
+		model_name="mobilenet_v1",
+		max_number_of_steps=1000,
+		batch_size=10,
+		learning_rate=0.01,
+		learning_rate_decay_type="fixed",
+		optimizer="rmsprop",
+		model_every_n_steps=10,
+		learning_rate_decay_factor=None,
+		end_learning_rate=None,
+		decay_steps=10,
+		utilization_per_gpu=0.9,
+		gpu_number="0",
+		checkpoint_path="default"):
 
-    conf_file = os.path.join(train_dir,"config.conf")
+  conf_file = os.path.join(train_dir,"config.conf")
 
-    #try:
-    config.add_section("0")
-    config.set("0",STATUS, "training")
-    config.write(open(conf_file, 'w'))
-    #except Exception, e:
-    #    print(e)
-    #    return False
+  #try:
+  config.add_section("0")
+  config.set("0",STATUS, "training") 
+  config.write(open(conf_file, 'w'))
+  #except Exception, e:
+  #    print(e)
+  #    return False
 
-    gpuConfig = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=utilization_per_gpu,visible_device_list=gpu_number)) 
-    with tf.Session(config=gpuConfig) as session:
-        main(train_dir=train_dir,dataset_name=dataset_name,dataset_dir=dataset_dir,num_train=num_train,num_val=num_val,num_classes=num_classes,model_name=model_name,max_number_of_steps=max_number_of_steps,batch_size=batch_size,learning_rate=learning_rate,learning_rate_decay_type=learning_rate_decay_type,optimizer_type=optimizer,model_every_n_steps=model_every_n_steps,learning_rate_decay_factor=learning_rate_decay_factor,decay_steps=decay_steps,checkpoint_path=checkpoint_path)
+  gpuConfig = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=utilization_per_gpu,
+							 visible_device_list=gpu_number)) 
+  with tf.Session(config=gpuConfig) as session:
+    start(model_id,
+	  train_dir=train_dir,
+	  dataset_name=dataset_name,
+	  dataset_dir=dataset_dir,
+	  num_train=num_train,
+	  num_val=num_val,
+	  num_classes=num_classes,
+	  model_name=model_name,
+	  max_number_of_steps=max_number_of_steps,
+	  batch_size=batch_size,
+	  learning_rate=learning_rate,
+	  learning_rate_decay_type=learning_rate_decay_type,
+	  optimizer_type=optimizer,
+	  model_every_n_steps=model_every_n_steps,
+	  learning_rate_decay_factor=learning_rate_decay_factor,
+	  end_learning_rate=end_learning_rate,
+	  decay_steps=decay_steps,
+	  checkpoint_path=checkpoint_path)
 
-def stop(train_dir=None):
-    conf_file = os.path.join(train_dir,"config.conf")
-    #try:
-    config.add_section("0")
-    config.set("0",STATUS, "stop")
-    config.write(open(conf_file, 'w'))
-    return False
+def stop(model_id=None,train_dir=None):
+  conf_file = os.path.join(train_dir,"config.conf")
+  #try:
+  config.add_section("0")
+  config.set("0",STATUS, "stop")
+  config.write(open(conf_file, 'w'))
 
-def restart(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_train=None,num_val=None,num_classes=None,model_name="mobilenet_v1",max_number_of_steps=1000,batch_size=10,learning_rate=0.01,learning_rate_decay_type="fixed",optimizer="rmsprop",model_every_n_steps=10,learning_rate_decay_factor=None,decay_steps=10,utilization_per_gpu=1.0,gpu_number="0"):
-    conf_file = os.path.join(train_dir,"config.conf")
-    #try:
-    config.add_section("0")
-    config.set("0",STATUS, "training")
-    config.write(open(conf_file, 'w'))
-    main(train_dir=train_dir,dataset_name=dataset_name,dataset_dir=dataset_dir,num_train=num_train,num_val=num_val,num_classes=num_classes,model_name=model_name,max_number_of_steps=max_number_of_steps,batch_size=batch_size,learning_rate=learning_rate,learning_rate_decay_type=learning_rate_decay_type,optimizer_type=optimizer,model_every_n_steps=model_every_n_steps,learning_rate_decay_factor=learning_rate_decay_factor,decay_steps=decay_steps)
-    return False
+　#set_status('model', model_id, 'stop')
+  return False
 
-def relearn(train_dir="/tmp/model/",dataset_name="labellio",dataset_dir=".",num_train=None,num_val=None,num_classes=None,model_name="mobilenet_v1",max_number_of_steps=1000,batch_size=10,learning_rate=0.01,learning_rate_decay_type="fixed",optimizer="rmsprop",model_every_n_steps=10,learning_rate_decay_factor=None,decay_steps=10,utilization_per_gpu=1.0,gpu_number="0"):
+def restart(model_id,
+	    train_dir="/tmp/model/",
+	    dataset_name="labellio",
+	    dataset_dir=".",
+	    num_train=None,
+	    num_val=None,
+	    num_classes=None,
+	    model_name="mobilenet_v1",
+	    max_number_of_steps=1000,
+	    batch_size=10,
+	    learning_rate=0.01,
+	    learning_rate_decay_type="fixed",
+	    optimizer="rmsprop",
+	    model_every_n_steps=10,
+	    learning_rate_decay_factor=None,
+	    end_learning_rate=None,
+	    decay_steps=10,
+	    utilization_per_gpu=1.0,
+	    gpu_number="0"):
+  conf_file = os.path.join(train_dir,"config.conf")
+  #try:
+  config.add_section("0")
+  config.set("0",STATUS, "training"
+  config.write(open(conf_file, 'w'))
 
-    conf_file = os.path.join(train_dir,"config.conf")
+  gpuConfig = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=utilization_per_gpu,
+							 visible_device_list=gpu_number)) 
+  with tf.Session(config=gpuConfig) as session:
+　  #set_status('model', model_id, 'restart')
+    start(model_id,
+	  train_dir=train_dir,
+	  dataset_name=dataset_name,
+	  dataset_dir=dataset_dir,
+	  num_train=num_train,
+	  num_val=num_val,
+	  num_classes=num_classes,
+	  model_name=model_name,
+	  max_number_of_steps=max_number_of_steps,
+	  batch_size=batch_size,
+	  learning_rate=learning_rate,
+	  learning_rate_decay_type=learning_rate_decay_type,
+	  optimizer_type=optimizer,
+	  model_every_n_steps=model_every_n_steps,
+	  learning_rate_decay_factor=learning_rate_decay_factor,
+	  end_learning_rate=end_learning_rate,
+	  decay_steps=decay_steps)
+  return False
 
-    #try:
-    config.add_section("0")
-    config.set("0",STATUS, "training")
-    config.write(open(conf_file, 'w'))
-    #except Exception, e:
-    #    print(e)
-    #    return False
+def relearn(model_id,
+	    train_dir="/tmp/model/",
+	    dataset_name="labellio",
+	    dataset_dir=".",
+	    num_train=None,num_val=None,
+	    num_classes=None,
+	    model_name="mobilenet_v1",
+	    max_number_of_steps=1000,
+	    batch_size=10,
+	    learning_rate=0.01,
+	    learning_rate_decay_type="fixed",
+	    optimizer="rmsprop",
+	    model_every_n_steps=10,
+	    learning_rate_decay_factor=None,
+	    end_learning_rate=None,
+	    decay_steps=10,
+	    utilization_per_gpu=1.0,
+	    gpu_number="0"):
 
-    main(train_dir=train_dir,dataset_name=dataset_name,dataset_dir=dataset_dir,num_train=num_train,num_val=num_val,num_classes=num_classes,model_name=model_name,max_number_of_steps=max_number_of_steps,batch_size=batch_size,learning_rate=learning_rate,learning_rate_decay_type=learning_rate_decay_type,optimizer_type=optimizer,model_every_n_steps=model_every_n_steps,learning_rate_decay_factor=learning_rate_decay_factor,decay_steps=decay_steps)
-    return False
+  conf_file = os.path.join(train_dir,"config.conf")
+
+  #try:
+  config.add_section("0")
+  config.set("0",STATUS, "training")
+  config.write(open(conf_file, 'w'))
+  #except Exception, e:
+  #    print(e)
+  #    return False     
+  gpuConfig = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=utilization_per_gpu,
+							 visible_device_list=gpu_number)) 
+  with tf.Session(config=gpuConfig) as session:
+    #set_status('model', model_id, 'restart')
+    start(model_id,
+	  train_dir=train_dir,
+	  dataset_name=dataset_name,
+	  dataset_dir=dataset_dir,
+	  num_train=num_train,
+	  num_val=num_val,
+	  num_classes=num_classes,
+	  model_name=model_name,
+	  max_number_of_steps=max_number_of_steps,
+	  batch_size=batch_size,
+	  learning_rate=learning_rate,
+	  learning_rate_decay_type=learning_rate_decay_type,
+	  optimizer_type=optimizer,
+	  model_every_n_steps=model_every_n_steps,
+	  learning_rate_decay_factor=learning_rate_decay_factor,
+	  end_learning_rate=end_learning_rate,
+	  decay_steps=decay_steps)
+  return False
