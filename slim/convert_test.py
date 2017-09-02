@@ -3,8 +3,8 @@ from convert import createTfrecord
 
 if __name__ == '__main__':
     #create tfrecord
-    createTfrecord(input_dir="/img/testdata/", 
-                   output_dir="/img/tfrecord/", 
-                   num_data=20, 
-                   num_val=20, 
+    createTfrecord(input_dir="/img/testdata2/", 
+                   output_dir="/img/tfrecord2/", 
+                   num_data=40, 
+                   num_val=40, 
                    dataset_name="labellio")

@@ -414,7 +414,8 @@ def start(model_id=None,
     # train step fn
     def train_step_fn(session, *args, **kwargs):
       step = int(session.run(args[1]))
-      total_loss_val, should_stop = train_step(session, *args, **kwargs)
+      #total_loss_val, should_stop = train_step(session, *args, **kwargs)
+      total_loss_val = 0
       print(" train_image_classifier: train_step_fn: step", step)
       conf_file = os.path.join(train_dir,"config.conf")
  
@@ -434,7 +435,7 @@ def start(model_id=None,
       if mode_save == 0 or mode_save == 1:
         print('_________________save ckpt models_____________________')
         print(" train_image_classifier: train_step_fn: save ckpt", step)
-        saver.save(session, save_directory+"model__step"+str(step)+".ckpt")        
+        saver.save(session, save_directory+"model.ckpt-"+str(step))        
       
       total_loss_train, should_stop = train_step(session, *args, **kwargs)
       mode_log = step % 100
